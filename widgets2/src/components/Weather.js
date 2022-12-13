@@ -1,35 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { toQueryString } from '../utils';
 
-class Weather extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        weather: null
-      };
-    }
+const Weather = props => {
+
+  const [weather, setWeather] = useState(null);
     
-    componentDidMount() {
-      navigator.geolocation.getCurrentPosition(
-        this.pollWeather,
-        (err) => console.log(err),
-        { timeout: 10000 }
-      );
-    }
-
-    pollWeather = async (location) => {
+    useEffect (() => {
+      const pollWeather = async (location) => {
       let url = 'http://api.openweathermap.org/data/2.5/weather?';
-
-      /* Remember that it's unsafe to expose your API key. (Note that pushing
-      files that include your key to Github will expose your key!) In
-      production, you would definitely save your key in an environment variable,
-      so do that here. Since this project runs in your local environment
-      (localhost), save your key as an environment variable in a .env file in
-      the root directory of your app. You can then access the key here as
-      "process.env.<variable_name>". Make sure to .gitignore your .env file!
-      Also remember to restart your server (i.e., re-run "npm start") whenever
-      you change your .env file. */
-      const apiKey = '???';
+      const apiKey = process.env.REACT_APP_WEATHER_API;
 
       const params = {
         lat: location.coords.latitude,
@@ -42,15 +21,19 @@ class Weather extends React.Component {
       const res = await fetch(url);
       if (res.ok) {
         const weather = await res.json();
-        this.setState({ weather });
+        setWeather(weather);
       }
       else {
         alert ("Check Weather API key!")
       }
     }
+      navigator.geolocation.getCurrentPosition(
+      pollWeather,
+      (err) => console.log(err),
+      { timeout: 10000 }
+      )}, []) 
 
-  render() {
-    const weather = this.state.weather;
+    // const weather = weather;
     let content = <div className='loading'>loading weather...</div>;
     
     if (weather) {
@@ -61,17 +44,16 @@ class Weather extends React.Component {
           <p>{temp.toFixed(1)} degrees</p>
         </div>
       );
-    }
+  }
 
     return (
-      <section className="weather-section">
-        <h1>Weather</h1>
-        <div className='weather'>
-          {content}
-        </div>
-      </section>
-    );
-  }
+    <section className="weather-section">
+      <h1>Weather</h1>
+      <div className='weather'>
+        {content}
+      </div>
+    </section>
+  );
 }
 
 export default Weather;
